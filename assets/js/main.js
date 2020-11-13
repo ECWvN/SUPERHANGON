@@ -103,25 +103,56 @@ window.addEventListener(
     const speedPercentage = speed / maxSpeed;
     const dx = dt * 2 * speedPercentage;
 
+    startPosition = position;
+
     position = Util.increase(position,dt * speed ,trackLength);
 
     if(keyLeft){
-        playerX = playerX - dx;
+       if(speed >0){
+           playerX -= dx;
+           if(hangTimer>= hangDelay){
+               hangTimer = 0;
+               hang -=2;
+               hang = Util.limit(hang, -6,0);
+           }else{
+               hangTimer += dt * 1000;
+           }
+       }
+
       
     }else if(keyRight){
-        playerX = playerX + dx;
+        if(speed >0){
+            playerX += dx;
+            if(hangTimer>= hangDelay){
+                hangTimer = 0;
+                hang +=2;
+                hang = Util.limit(hang, 0,6);
+            }else{
+                hangTimer += dt * 1000;
+            }
+        }
         
+    }else{
+        if(hang !== 0){
+            if(hangTimer >= hangDelay || hangTimer === 0){
+                hangTimer =0;
+                hang = hang < 0 ? hang + 2 : hang -2;
+            }
+        }
     }
 
     playerX = playerX - dx * speedPercentage * playerSegment.curve * centrifugal
 
-    if(keyFaster){
-        speed = Util.accelerate(speed,accel,dt);
-        
-    }else if(keySlower){
+    if(keySlower){
         speed = Util.accelerate(speed,breaking,dt);
+        brake = 14;
+        
+    }else if(keyFaster){
+        speed = Util.accelerate(speed,accel,dt);
+        brake = 0;
     }else{
         speed = Util.accelerate(speed,decel,dt);
+        brake = 0;
     }
 
     if((playerX < -1 || playerX > 1) && speed > offRoadLimit ){
@@ -130,25 +161,19 @@ window.addEventListener(
 
     playerX = Util.limit(playerX,-2,2);
     speed = Util.limit(speed,0,maxSpeed);
+    tire= Util.toInt(position/500) % 2;
+    bikeSpriteSelector = 6 + tire + hang + brake;
+
+
+    skyOffset = Util.increase(skyOffset, (skySpeed * playerSegment.curve * (position - startPosition)) / segmentLength, 1);
+    hillsOffset = Util.increase(hillsOffset, (hillsSpeed * playerSegment.curve * (position - startPosition)) / segmentLength, 1);
+    woodsOffset = Util.increase(woodsOffset, (woodsSpeed * playerSegment.curve * (position - startPosition)) / segmentLength, 1);
    };
-   const render = () => {
-    //   let baseSegment =Segment.find(position);
-    //   let maxy = height;
-
-    //   ctx.ClearRect(0,0,width,height);
-
-    //   let n, segment;
 
 
-    //   for(n=0; n<drawDistance; n++){
-    //       segment = segments[(baseSegment.index + n)% segments.length];
-    //       segment.looped = segment.index < baseSegment.index;
-    //       segment.fog = Util.exponentialFog(n / drawDistance, fogDensity);
-    //       segment.clip = maxy;
-
-
-    //     }
-    let baseSegment = Segment.find(position);
+const render = () => {
+  
+let baseSegment = Segment.find(position);
 let basePercent = Util.percentRemaining(position, segmentLength);
 let playerSegment = Segment.find(position + playerZ);
 let playerPercent = Util.percentRemaining(position + playerZ, segmentLength);
@@ -156,7 +181,14 @@ let playerY = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.
 let maxy = height;
 let x = 0;
 let dx = -(baseSegment.curve * basePercent);
+
+
 ctx.clearRect(0, 0, width, height);
+
+Render.background(ctx, background, width, height, BACKGROUND.SKY, skyOffset, resolution * skySpeed * playerY);
+Render.background(ctx, background, width, height, BACKGROUND.HILLS, hillsOffset, resolution * hillsSpeed * playerY);
+Render.background(ctx, background, width, height, BACKGROUND.WOODS, woodsOffset, resolution * woodsSpeed * playerY);
+
 let n, i, segment, car, sprite, spriteScale, spriteX, spriteY;
 for (n = 0; n < drawDistance; n++) {
  segment = segments[(baseSegment.index + n) % segments.length];
@@ -176,6 +208,14 @@ for (n = 0; n < drawDistance; n++) {
  maxy = segment.p1.screen.y;
 }
 
+     for(n=drawDistance-1; n>0; n--) {
+      segment = segments[(baseSegment.index + n ) % segments.length];
+      //sprts
       
-    
+     if (segment == playerSegment) {
+        Render.player(ctx, width, height, resolution, roadWidth, sprites, speed / maxSpeed, cameraDepth / playerZ, width / 2, height / 2 - ((cameraDepth / playerZ) * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height) / 2); // speed * (keyLeft ? -1 : keyRight ? 1 : 0), playerSegment.p2.world.y - playerSegment.p1.world.y
+        }
+        
+    }
+   //ik weet niet waarom maar hij geenft een property 'w' undifined error met deze code: Render.speedometer(ctx, width, height, resolution, roadWidth, sprites, 0, 0.0005208333333333333, width, height);
 };

@@ -15,12 +15,17 @@ class Road {
      static reset() {
         segments = [];
         Road.addStraight();
+        Road.addBumps();
+        Road.addHill();
         Road.addCurve(ROAD.LENGTH.LONG, ROAD.CURVE.MEDIUM, 0);
         Road.addStraight();
+        Road.addLowRollingHills();
         Road.addSCurves();
+        Road.addHill(ROAD.LENGTH.LONG, ROAD.HILL.MEDIUM);
         Road.addStraight();
         Road.addStraight();
         Road.addSCurves();
+        Road.addDownhillToEnd();
                     
         segments[Segment.find(playerZ).index + 2].color = COLORS.START;
         segments[Segment.find(playerZ).index + 3].color = COLORS.START;
@@ -46,4 +51,37 @@ class Road {
    Road.add(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, -ROAD.CURVE.EASY);
    Road.add(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, -ROAD.CURVE.MEDIUM);
  }
+ static addHill(num, height) {
+  num = num || ROAD.LENGTH.MEDIUM;
+  height = height || ROAD.HILL.MEDIUM;
+  Road.add(num, num, num, 0, height);
+}
+
+static addLowRollingHills(num, height) {
+  num = num || ROAD.LENGTH.SHORT;
+  height = height || ROAD.HILL.LOW;
+  Road.add(num, num, num, 0, height / 2);
+  Road.add(num, num, num, 0, -height);
+  Road.add(num, num, num, 0, height);
+  Road.add(num, num, num, 0, 0);
+  Road.add(num, num, num, 0, height / 2);
+  Road.add(num, num, num, 0, 0);
+}
+
+static addBumps() {
+  Road.add(10, 10, 10, 0, 5);
+  Road.add(10, 10, 10, 0, -2);
+  Road.add(10, 10, 10, 0, -5);
+  Road.add(10, 10, 10, 0, 8);
+  Road.add(10, 10, 10, 0, 5);
+  Road.add(10, 10, 10, 0, -7);
+  Road.add(10, 10, 10, 0, 5);
+  Road.add(10, 10, 10, 0, -2);
+}
+
+static addDownhillToEnd(num) {
+  num = num || 200;
+  Road.add(num, num, num, -ROAD.CURVE.EASY, -Segment.lastY() / segmentLength);
+}
+
    }

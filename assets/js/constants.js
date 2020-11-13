@@ -16,6 +16,7 @@ const KEY = {
     DARK: { road: '#696969', grass: '#009A00', rumble: '#BBBBBB' },
     START: { road: 'white', grass: 'white', rumble: 'white' },
     FINISH: { road: 'black', grass: 'black', rumble: 'black' },
+    METER: { x:459, y:225, w:140, h:122 },
    };
    const BACKGROUND = {
     SKY: { x: 1, y: 1, w: 800, h: 300 },
